@@ -1,0 +1,137 @@
+# ─── Automated SEO Agent — Default Configuration ─────────────────────────────
+
+[app]
+env = "development"
+log_level = "INFO"
+data_dir = "./data"
+
+[wordpress]
+base_url = ""
+username = ""
+app_password = ""
+request_timeout = 30
+max_pages = 200
+
+[claude]
+model = "claude-sonnet-4-6"
+temperature = 0.2
+max_tokens = 4096
+max_retries = 3
+
+[openai]
+model = "gpt-4.1-2025-04-14"
+temperature = 0.2
+max_tokens = 4096
+max_retries = 3
+
+[crawler]
+concurrency = 5
+request_delay = 0.5
+respect_robots = true
+max_depth = 5
+user_agent = "SEOAgent/1.0 (+https://github.com/anthropics/automated-seo-agent)"
+
+[seo_audit]
+min_word_count = 300
+title_min_length = 30
+title_max_length = 60
+meta_desc_min_length = 120
+meta_desc_max_length = 160
+h1_required = true
+keyword_density_min = 0.5
+keyword_density_max = 3.0
+
+[scoring]
+auto_execute_threshold = 85
+auto_execute_risk_levels = ["low"]
+min_change_interval_days = 7
+max_batch_size = 10
+
+[execution]
+mode = "dry_run"
+validation_delay_hours = 48
+auto_rollback = true
+
+[database]
+# SQLite used in dev if POSTGRES_URL not set
+sqlite_url = "sqlite+aiosqlite:///./data/seo_agent.db"
+
+[postgres]
+# Set via env: POSTGRES_URL, POSTGRES_SYNC_URL, LANGGRAPH_CHECKPOINT_URL
+url = ""
+sync_url = ""
+checkpoint_url = ""
+# Connection pool settings
+pool_size = 10
+max_overflow = 20
+pool_timeout = 30
+
+[redis]
+# Set via env: REDIS_URL
+url = "redis://localhost:6379/0"
+
+[worker]
+# Celery worker concurrency
+concurrency = 4
+# Task time limits in seconds
+soft_time_limit = 3600
+hard_time_limit = 7200
+# Queues
+pipeline_queue = "seo_pipeline"
+monitor_queue = "seo_monitor"
+
+[policy]
+# SEO change cooldown periods (days)
+meta_cooldown_days = 14
+content_cooldown_days = 21
+new_page_manual_only = true
+homepage_manual_only = true
+# Pages below this monthly impression count get conservative treatment
+low_impression_threshold = 100
+# Block auto-retry after this many consecutive failures on same page
+max_failed_retries = 3
+# Approval expiry: auto-reject if not acted on within N hours
+approval_expiry_hours = 72
+
+[scheduler]
+# Cron: audit + planning candidate window (28-31); code runs only on true month-end
+audit_cron = "0 2 28-31 * *"
+# Cron: execute approved plans (Monday + Thursday 3 AM)
+execution_cron = "0 3 * * 1,4"
+# Cron: ranking monitor (every 6 hours)
+ranking_cron = "0 */6 * * *"
+
+[api]
+host = "0.0.0.0"
+port = 8000
+secret = ""
+
+[google]
+pagespeed_api_key = ""
+search_console_credentials = ""
+search_console_site_url = ""
+
+[serp]
+api_key = ""
+
+[competitive]
+# Optional fixed competitor seeds used by serp_analysis (free mode)
+# Add a handful of specific URLs, not full-site crawls.
+urls = []
+# Domain seeds are normalized to homepage URLs (https://domain/)
+domains = []
+
+[email]
+# Set enabled = true and fill SMTP credentials to get approval notifications
+enabled = false
+smtp_host = "smtp.gmail.com"
+smtp_port = 587
+smtp_user = ""
+smtp_password = ""
+from_address = "seo-agent@yourcompany.com"
+from_name = "SEO Agent"
+# Comma-separated list of recipient emails
+# Can also be set via SEO_AGENT_EMAIL_RECIPIENTS env var
+recipients = []
+# Base URL shown in email links (your dashboard or API server)
+app_base_url = "http://localhost:8000"

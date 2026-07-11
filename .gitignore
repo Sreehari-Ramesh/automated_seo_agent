@@ -1,0 +1,86 @@
+# ─── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+*.pyo
+*.pyd
+*.so
+*.dylib
+
+# ─── Virtual environments ─────────────────────────────────────────────────────
+.env
+.venv/
+venv/
+env/
+ENV/
+
+# ─── Secrets & credentials ────────────────────────────────────────────────────
+.env.local
+.env.*.local
+.env.production
+.env.staging
+credentials/
+*.pem
+*.key
+*.p12
+*.pfx
+secrets.toml
+gsc_credentials.json
+service_account.json
+
+# ─── Database & data files ────────────────────────────────────────────────────
+data/
+*.db
+*.sqlite
+*.sqlite3
+celerybeat-schedule
+celerybeat.pid
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
+*.log.*
+
+# ─── Test & coverage ──────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+
+# ─── Linting & formatting ─────────────────────────────────────────────────────
+.ruff_cache/
+.mypy_cache/
+.pytype/
+
+# ─── IDEs ─────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ─── Docker ───────────────────────────────────────────────────────────────────
+.docker/
+
+# ─── Alembic ──────────────────────────────────────────────────────────────────
+# Keep migrations/ tracked; ignore only local override files
+alembic.ini.local
+
+# ─── Misc ─────────────────────────────────────────────────────────────────────
+*.bak
+*.tmp
+*.orig
+
+
+src/config/deployment_config.py

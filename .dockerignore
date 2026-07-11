@@ -1,0 +1,49 @@
+# Secrets — never bake these into the image
+.env
+.env.*
+!.env.example
+
+# Version control
+.git
+.gitignore
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info
+.eggs
+dist
+build
+
+# Data / runtime files
+data/
+*.db
+*.sqlite
+*.sqlite3
+celerybeat-schedule
+celerybeat.pid
+
+# Logs
+*.log
+logs/
+
+# Dev tools
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+
+# Test artifacts
+.pytest_cache
+.coverage
+htmlcov/
+tests/
+
+# Docs
+*.md
+!README.md
+docs/

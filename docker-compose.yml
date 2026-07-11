@@ -1,0 +1,157 @@
+# ─── Production stack ─────────────────────────────────────────────────────────
+# Services: PostgreSQL · Redis · API server · Streamlit UI · Celery workers · Beat
+#
+# Runtime config source: src/config/deployment_config.py
+#
+# Start:    docker compose up -d
+# Stop:     docker compose down
+# Logs:     docker compose logs -f
+# Reset DB: docker compose down -v && docker compose up -d
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: seo_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: seo_agent
+      # Keep this in sync with POSTGRES_* URLs in src/config/deployment_config.py
+      POSTGRES_PASSWORD: change_me_db_password
+      POSTGRES_DB: seo_agent
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Only expose externally if you need direct DB access; remove in production
+    # ports:
+    #   - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U seo_agent -d seo_agent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: seo_redis
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+    # Only expose externally if needed; remove in production
+    # ports:
+    #   - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: seo_frontend
+    restart: unless-stopped
+    ports:
+      - "8500:8500"
+    environment:
+      API_BASE_URL: http://api:8080
+    depends_on:
+      api:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: seo-agent:latest
+    container_name: seo_api
+    restart: unless-stopped
+    command: seo-agent serve --host 0.0.0.0 --port 8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - sqlite_data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── Streamlit UI ─────────────────────────────────────────────────────────────
+  streamlit:
+    image: seo-agent:latest
+    container_name: seo_streamlit
+    restart: unless-stopped
+    command: streamlit run streamlit_app.py --server.port 8500 --server.address 0.0.0.0 --server.headless true
+    ports:
+      - "8500:8500"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # ── Celery: Pipeline Worker ──────────────────────────────────────────────────
+  worker_pipeline:
+    image: seo-agent:latest
+    container_name: seo_worker_pipeline
+    restart: unless-stopped
+    command: >
+      celery -A src.worker.celery_app worker
+        --queues seo_pipeline
+        --concurrency 2
+        --loglevel INFO
+        --without-gossip
+        --without-mingle
+    volumes:
+      - sqlite_data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ── Celery: Monitor Worker ───────────────────────────────────────────────────
+  worker_monitor:
+    image: seo-agent:latest
+    container_name: seo_worker_monitor
+    restart: unless-stopped
+    command: >
+      celery -A src.worker.celery_app worker
+        --queues seo_monitor
+        --concurrency 4
+        --loglevel INFO
+        --without-gossip
+        --without-mingle
+    volumes:
+      - sqlite_data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ── Celery Beat (scheduler) ───────────────────────────────────────────────────
+  beat:
+    image: seo-agent:latest
+    container_name: seo_beat
+    restart: unless-stopped
+    command: >
+      celery -A src.worker.celery_app beat
+        --loglevel INFO
+        --scheduler celery.beat.PersistentScheduler
+    volumes:
+      - sqlite_data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+  sqlite_data:
