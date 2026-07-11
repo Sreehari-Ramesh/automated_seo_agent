@@ -945,6 +945,62 @@ Each full pipeline run makes approximately 5–10 LLM calls per page (audit, key
 Seed-based SERP analysis can run with zero external API cost.
 
 
+## To setup it completely a config file with proper env values in the below format have to be added to the config folder:
+
+"""Single source of runtime configuration for Docker deployment.
+
+The app (API/workers) reads these values directly at runtime.
+"""
+
+DOCKER_ENV: dict[str, str] = {
+    # Core infra
+    "POSTGRES_PASSWORD": "change_me_db_password",
+    "PUBLIC_HOST": "your-server-ip-or-domain",
+    "SEO_AGENT_ENV": "production",
+    "LOG_LEVEL": "INFO",
+    # Database mode:
+    # - Postgres mode: set all three URLs below.
+    # - SQLite fallback mode: leave all three empty ("").
+    "POSTGRES_URL": "",
+    "POSTGRES_SYNC_URL": "",
+    "LANGGRAPH_CHECKPOINT_URL": "",
+    "REDIS_URL": "redis://redis:6379/0",
+
+    # LLM / SEO integrations
+    "ANTHROPIC_API_KEY": "",
+    "OPENAI_API_KEY": "",
+    "GOOGLE_PAGESPEED_API_KEY": "",
+    "SERP_API_KEY": "",
+
+    # WordPress
+    "WP_BASE_URL": "",
+    "WP_USERNAME": "admin",
+    "WP_APP_PASSWORD": "",
+    "SEO_AGENT_WP_MAX_PAGES": "200",
+
+    # Optional competitor seeds
+    "SEO_AGENT_COMPETITOR_URLS": "",
+    "SEO_AGENT_COMPETITOR_DOMAINS": "",
+
+    # Email / approval notifications
+    "SEO_AGENT_EMAIL_ENABLED": "true",
+    "SEO_AGENT_EMAIL_SMTP_HOST": "smtp.gmail.com",
+    "SEO_AGENT_EMAIL_SMTP_PORT": "587",
+    "SEO_AGENT_EMAIL_SMTP_USER": "",
+    "SEO_AGENT_EMAIL_SMTP_PASSWORD": "",
+    "SEO_AGENT_EMAIL_FROM_ADDRESS": "",
+    "SEO_AGENT_EMAIL_FROM_NAME": "SEO Agent",
+    "SEO_AGENT_EMAIL_RECIPIENTS": "",
+
+    # Optional API auth
+    "SEO_AGENT_API_SECRET": "",
+    "SEO_AGENT_ALLOWED_ORIGINS": "http://your-server-ip-or-domain:8501",
+    "SEO_AGENT_EMAIL_APP_BASE_URL": "http://your-server-ip-or-domain:8000",
+    "SEO_AGENT_STREAMLIT_URL": "http://your-server-ip-or-domain:8501",
+}
+
+
+
 
 
 
